@@ -8,21 +8,21 @@ import { EncryptionRequest } from './EncryptionRequest'
 
 export class Server {
     serverId: string
-    serverKey: NodeRSA
     yggdrasilServer: any
+    privateKeyPem: string
     publicKeyDer: Buffer
 
     constructor(serverId: string, serverKey: NodeRSA) {
         this.serverId = serverId
         this.yggdrasilServer = yggdrasil.server()
-        this.serverKey = serverKey
 
-        const publicKeyStrArr = this.serverKey.exportKey('pkcs8-public-pem').split('\n')
+        const publicKeyStrArr = serverKey.exportKey('pkcs8-public-pem').split('\n')
         let publicKeyStr = ''
         for (let i = 1; i < publicKeyStrArr.length - 1; i++) {
           publicKeyStr += publicKeyStrArr[i]
         }
         this.publicKeyDer = Buffer.from(publicKeyStr, 'base64')
+        this.privateKeyPem = serverKey.exportKey()
     }
 
     startLogin(): EncryptionRequest {
@@ -36,7 +36,7 @@ export class Server {
 
     async authenticate(username: string, encryptedSharedSecret: Buffer): Promise<any> {
         const sharedSecret = crypto.privateDecrypt({
-            key: this.serverKey.exportKey(),
+            key: this.privateKeyPem,
             padding: crypto.constants.RSA_PKCS1_PADDING
         }, encryptedSharedSecret)
 

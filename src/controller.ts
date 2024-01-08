@@ -1,5 +1,5 @@
 import NodeRSA from "node-rsa"
-import config from "./config"
+import { config } from "./config"
 import { Server } from "./server"
 import { HttpError } from "./HttpError"
 import { Client } from "./client"
@@ -23,8 +23,8 @@ export class Controller {
     }
     
     async verifySecret(reqBody: any): Promise<any> {
-        const username = reqBody.username
-        const sharedSecret = reqBody.sharedSecret
+        const username = reqBody?.username
+        const sharedSecret = reqBody?.sharedSecret
     
         if (!username || typeof username !== 'string') {
             throw new HttpError(400, 'invalid username')
@@ -34,14 +34,17 @@ export class Controller {
             throw new HttpError(400, 'invalid sharedSecret')
         }
     
-        const res = await this.server.authenticate(username, Buffer.from(sharedSecret, 'base64'))
-        return res
+        const auth = await this.server.authenticate(username, Buffer.from(sharedSecret, 'base64'))
+        return {
+            username: auth.name,
+            uuid: auth.id
+        }
     }
     
     async verifyToken(reqBody: any): Promise<any> {
-        const accessToken = reqBody.accessToken
-        const uuid = reqBody.uuid
-        const username = reqBody.username
+        const accessToken = reqBody?.accessToken
+        const uuid = reqBody?.uuid
+        const username = reqBody?.username
     
         if (!accessToken || typeof accessToken !== 'string') {
             throw new HttpError(400, 'invalid accessToken')
@@ -64,6 +67,9 @@ export class Controller {
         const req = this.server.startLogin()
         const res = await client.encrypt(req)
         const auth = await this.server.authenticate(client.session.username, res.sharedSecret)
-        return auth
+        return {
+            username: auth.name,
+            uuid: auth.id
+        }
     }
 }

@@ -16,12 +16,12 @@ router.get('/startlogin', async (ctx, next) => {
 })
 
 router.post('/verifysecret', async (ctx, next) => {
-    ctx.body = await controller.verifySecret(ctx.req.body)
+    ctx.body = await controller.verifySecret(ctx.request.body)
     await next()
 })
 
 router.post('/verifytoken', async (ctx, next) => {
-    ctx.body = await controller.verifyToken(ctx.req.body)
+    ctx.body = await controller.verifyToken(ctx.request.body)
     await next()
 })
 
